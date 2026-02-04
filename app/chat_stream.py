@@ -1,3 +1,4 @@
+import json
 import os
 import requests
 
@@ -51,6 +52,7 @@ User question:
 
 Answer:
 """
+
     def stream_generator():
         # Call Ollama API with streaming enabled
         
@@ -70,21 +72,32 @@ Answer:
                     continue
                 
                 try:
-                    data = line.decode('utf-8')
-                    json_data = json.loads(data)
+                    data = json.loads(line.decode('utf-8'))
+                    token = data.get("response", "")
                     
-                    token = json_data.get("response", "")
                     if token:
                         yield f"data: {token}\n\n"
                     
-                    if json_data.get("done", False):
-                        yield "data: [DONE]\n\n"
+                    if data.get("done", False):
                         break
                     
                 except Exception as e:
                     continue
                 
+        # Send retrieval metadata as final JSON event        
+        metadata_event = {
+            "context_used": {
+                "documents": results["documents"],
+                "metadatas": results["metadatas"],
+                "distances": results.get("distances")
+            }
+        }
+        
+        yield f"data: {json.dumps(metadata_event)}\n\n"
+        
+        # End of stream
+        
+        yield "data: [DONE]\n\n"
+        
     return StreamingResponse(stream_generator(), media_type="text/event-stream")
-        
-        
     
