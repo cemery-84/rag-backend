@@ -2,11 +2,12 @@ import json
 import os
 import requests
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from app.utils import query_documents
+from app.auth.dependencies import get_current_user
 
 router = APIRouter()
 
@@ -18,7 +19,7 @@ class ChatStreamRequest(BaseModel):
     n_results: int = 5
 
 @router.post("/chat/stream")
-async def chat_stream(payload: ChatStreamRequest) -> StreamingResponse:
+async def chat_stream(payload: ChatStreamRequest, user: dict = Depends(get_current_user)) -> StreamingResponse:
     """
     Accepts a user query, retrieves relevant chunks from Chroma,
     and generates a streaming response using the local Ollama model.

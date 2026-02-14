@@ -1,9 +1,10 @@
 import uuid
 
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Depends
 from pypdf import PdfReader
 
 from app.utils import add_documents
+from app.auth.dependencies import get_current_user
 
 router = APIRouter()
 
@@ -39,7 +40,7 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str]
     return chunks
 
 
-def process_document(text: str, source_name: str) -> int:
+def process_document(text: str, source_name: str, owner_id: str, owner_email: str) -> int:
     """
     Processes the document text by chunking and adding to the vector store.
     """
@@ -52,7 +53,9 @@ def process_document(text: str, source_name: str) -> int:
         ids.append(f"{source_name}-{i}-{uuid.uuid4()}")
         metadatas.append({
             "source": source_name,
-            "chunk_index": i
+            "chunk_index": i,
+            "owner_id": owner_id,
+            "owner_email": owner_email
         })
         
     add_documents(ids=ids, texts=chunks, metadatas=metadatas)
@@ -61,7 +64,7 @@ def process_document(text: str, source_name: str) -> int:
 
 
 @router.post("/ingest")
-async def ingest_file(file: UploadFile = File(...)) -> dict:
+async def ingest_file(file: UploadFile = File(...), user: dict = Depends(get_current_user)) -> dict:
     """
     Endpoint to ingest a PDF file, extract text, chunk it, and add to vector store.
     Returns the number of chunks added.
@@ -69,7 +72,10 @@ async def ingest_file(file: UploadFile = File(...)) -> dict:
     if file.content_type != "application/pdf":
         return {"error": "Only PDF files are supported."}
     
+    firebase_uid = user["user_id"]
+    email = user.get("email")
+    
     text = extract_text_from_pdf(file)
-    num_chunks = process_document(text, source_name=file.filename)
+    num_chunks = process_document(text, source_name=file.filename, owner_id=firebase_uid, owner_email=email)
     
     return {"chunks_added": num_chunks}
