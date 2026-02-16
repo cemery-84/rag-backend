@@ -1,0 +1,51 @@
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment and virtual environment
+.env
+venv/
+
+# Git
+.git/
+.gitignore
+
+# Editor and IDE files
+.vscode/
+
+# Database files and log files
+*.db
+data/
+logs/
+*.log
+
+# Test and lint caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Code coverage reports
+.coverage
+htmlcov/
+
+# Jupyter notebooks
+notebooks/
+*.ipynb
+
+# Local DB files
+*.sqlite
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
+
+# OS generated files
+.DS_Store
+
+# SSL Keys and certificates
+*.pem
+*.key
+*.crt

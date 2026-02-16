@@ -21,6 +21,7 @@ Simple AI Chat App RAG Backend written using Python and used Ollama for the LLM
 
 # Routes
 
+- `http://localhost:8000/docs` - Displays the Swagger documentation for the backend application
 - `http://localhost:8000/ingest` - Used to ingest documents
     - Method: POST
     - Content-Type: multipart/form-data
@@ -41,3 +42,31 @@ Simple AI Chat App RAG Backend written using Python and used Ollama for the LLM
     - Body: Raw JSON
         - message: string - Text that users is querying about
         - n_results: number - The number of results to return
+- `http://localhost:8000/conversations` - Provides POST and GET operations to Create and Retrieve Conversations
+    - Get Conversations - Gets a list of conversations
+        - Method: GET
+        - Body: None
+    - Create Conversation - Creates a single conversation
+        - Method: POST
+        - Body: Raw JSON
+            - title: Title for the conversation (Defaults to "New Conversation")
+- `http://localhost:8000/conversations/{conversation_id}` - Currently only DELETE operation is supported to delete a conversation
+    - Method: DELETE
+    - Body: None
+    - {conversation_id}: The Id of the Conversation to be deleted
+- `http://localhost:8000/conversations/{conversation_id}/messages` - Provides POST and GET operations to Create and Retrieve Messages within a Conversation
+    - Get Messages - Gets a list of conversation messages
+        - Method: GET
+        - Body: None
+        - {conversation_id}: The Id of the Conversation which contains the Messages to be retrieved
+    - Create Message - Creates a single message in the provided conversation
+        - Method: POST
+        - Body: Raw JSON
+            - role: Role of the message (user, assistant)
+            - content: Text content of the message
+        - {conversation_id}: The Id of the Conversation in which to create the Message
+
+# Docker commands
+
+- `docker build -t fastapi-app .` - Builds the Docker image locally
+- `docker run --env-file .env -p 8000:8000 fastapi-app` - Runs the Docker container locally

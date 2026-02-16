@@ -2,6 +2,9 @@ import requests
 from jose import jwt
 from fastapi import HTTPException, status
 
+import logging
+logger = logging.getLogger(__name__)
+
 from .firebase_config import (
     FIREBASE_PROJECT_ID,
     FIREBASE_ISSUER,
@@ -24,6 +27,7 @@ def verify_firebase_token(token: str):
         kid = header.get("kid")
         
         if not kid:
+            logger.error("Invalid token header")
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token header")
 
         public_keys = get_firebase_public_keys()
@@ -33,6 +37,7 @@ def verify_firebase_token(token: str):
             public_keys = get_firebase_public_keys()
             
             if kid not in public_keys:
+                logger.error("Invalid token key")
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token key")
         
         public_key = public_keys[kid]
@@ -47,6 +52,7 @@ def verify_firebase_token(token: str):
         return decoded_token
     
     except Exception as e:
+        logger.exception("Invalid Firebase token")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
             detail=f"Invalid Firebase token: {str(e)}",

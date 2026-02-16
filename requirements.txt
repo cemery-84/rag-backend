@@ -1,6 +1,6 @@
 fastapi
-uvicorn
-chromadb
+uvicorn[standard]
+chromadb>=1.4,<1.5
 pypdf
 python-dotenv
 requests
