@@ -1,59 +1,21 @@
-import requests
-from jose import jwt
+import firebase_admin
+from firebase_admin import auth, credentials
 from fastapi import HTTPException, status
-
 import logging
+
 logger = logging.getLogger(__name__)
 
-from .firebase_config import (
-    FIREBASE_PROJECT_ID,
-    FIREBASE_ISSUER,
-    FIREBASE_JWKS_URL,
-)
+# Load the service account JSON file
+cred = credentials.Certificate("service-account.json")
 
-JWKS_CACHE = {}
-
-def get_firebase_public_keys():
-    global JWKS_CACHE
-    if not JWKS_CACHE:
-        response = requests.get(FIREBASE_JWKS_URL)
-        response.raise_for_status()
-        JWKS_CACHE = response.json()
-    return JWKS_CACHE
+# Initialize the Firebase app
+firebase_admin.initialize_app(cred)
 
 def verify_firebase_token(token: str):
     try:
-        header = jwt.get_unverified_header(token)
-        kid = header.get("kid")
-        
-        if not kid:
-            logger.error("Invalid token header")
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token header")
-
-        public_keys = get_firebase_public_keys()
-        
-        if kid not in public_keys:
-            JWKS_CACHE.clear()  # Clear cache and try again
-            public_keys = get_firebase_public_keys()
-            
-            if kid not in public_keys:
-                logger.error("Invalid token key")
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token key")
-        
-        public_key = public_keys[kid]
-
-        decoded_token = jwt.decode(
-            token,
-            public_key,
-            algorithms=["RS256"],
-            audience=FIREBASE_PROJECT_ID,
-            issuer=FIREBASE_ISSUER,
-        )
+        # Verify the token and decode it
+        decoded_token = auth.verify_id_token(token)
         return decoded_token
-    
     except Exception as e:
-        logger.exception("Invalid Firebase token")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail=f"Invalid Firebase token: {str(e)}",
-        )
+        logger.error("Invalid Firebase token")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid Firebase token: {str(e)}")

@@ -208,3 +208,8 @@ __marimo__/
 
 # Chroma database files
 data/
+
+# Keys and Secrets
+service-account.json
+*.pem
+*.key

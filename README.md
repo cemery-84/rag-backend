@@ -70,3 +70,6 @@ Simple AI Chat App RAG Backend written using Python and used Ollama for the LLM
 
 - `docker build -t fastapi-app .` - Builds the Docker image locally
 - `docker run --env-file .env -p 8000:8000 fastapi-app` - Runs the Docker container locally
+- `docker ps` - Lists Docker containers
+- `docker exec <container-name> printenv` - Prints the list of Environment Variables for the container
+    - `<container-name>` is the random Name Docker creates for the container

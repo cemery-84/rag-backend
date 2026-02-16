@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer
 
 from app.routes.ingest import router as ingest_router
 from app.routes.query import router as query_router
@@ -16,6 +17,8 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+
+security = HTTPBearer()
 
 load_dotenv()
 
