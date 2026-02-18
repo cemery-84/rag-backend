@@ -34,22 +34,22 @@ az acr login --name $acrName
 
 # --- BUILD DOCKER IMAGE (NO CACHE) ---
 Write-Host "Building Docker image..."
-docker build --no-cache -t "$imageName:$tag" .
+docker build --no-cache -t "${imageName}:${tag}" .
 
 # --- TAG IMAGE FOR ACR ---
 Write-Host "Tagging image..."
-docker tag "$imageName:$tag" "$acrName.azurecr.io/$imageName:$tag"
+docker tag "${imageName}:${tag}" "$acrName.azurecr.io/${imageName}:${tag}"
 
 # --- PUSH IMAGE TO ACR ---
 Write-Host "Pushing image to Azure Container Registry..."
-docker push "$acrName.azurecr.io/$imageName:$tag"
+docker push "$acrName.azurecr.io/${imageName}:${tag}"
 
 # --- UPDATE CONTAINER APP TO NEW IMAGE ---
 Write-Host "Updating Azure Container App to new image..."
 az containerapp update `
   --name $containerApp `
   --resource-group $resourceGroup `
-  --image "$acrName.azurecr.io/$imageName:$tag"
+  --image "$acrName.azurecr.io/${imageName}:${tag}"
 
 Write-Host "Deployment complete!"
 
