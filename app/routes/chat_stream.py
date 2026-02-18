@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from app.utils import query_documents
 from app.auth.dependencies import get_current_user
 
-router = APIRouter()
+router = APIRouter(prefix="/chat", tags=["chat"], strict_slashes=False)
 
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
 MODEL_NAME = os.getenv("OLLAMA_MODEL", "llama3")
@@ -18,7 +18,7 @@ class ChatStreamRequest(BaseModel):
     message: str
     n_results: int = 5
 
-@router.post("/chat/stream")
+@router.post("/stream")
 async def chat_stream(payload: ChatStreamRequest, user: dict = Depends(get_current_user)) -> StreamingResponse:
     """
     Accepts a user query, retrieves relevant chunks from Chroma,

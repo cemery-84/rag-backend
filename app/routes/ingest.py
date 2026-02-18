@@ -6,7 +6,7 @@ from pypdf import PdfReader
 from app.utils import add_documents
 from app.auth.dependencies import get_current_user
 
-router = APIRouter()
+router = APIRouter(prefix="/ingest", tags=["ingest"], strict_slashes=False)
 
 
 def extract_text_from_pdf(file: UploadFile) -> str:
@@ -63,7 +63,7 @@ def process_document(text: str, source_name: str, owner_id: str, owner_email: st
     return len(chunks)
 
 
-@router.post("/ingest")
+@router.post("/")
 async def ingest_file(file: UploadFile = File(...), user: dict = Depends(get_current_user)) -> dict:
     """
     Endpoint to ingest a PDF file, extract text, chunk it, and add to vector store.

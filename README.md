@@ -69,7 +69,13 @@ Simple AI Chat App RAG Backend written using Python and used Ollama for the LLM
 # Docker commands
 
 - `docker build -t fastapi-app .` - Builds the Docker image locally
+- `docker build --no-cache -t fastapi-app .` - Builds the Docker image locally forcing it to rebuild cleanly
 - `docker run --env-file .env -p 8000:8000 fastapi-app` - Runs the Docker container locally
 - `docker ps` - Lists Docker containers
 - `docker exec <container-name> printenv` - Prints the list of Environment Variables for the container
     - `<container-name>` is the random Name Docker creates for the container
+- Adding the Docker container to the Azure Container Registry
+    - `az login` - Log into Azure CLI
+    - `az acr login --name aichatappcontainer` - Log into the Azure ACR
+    - `docker tag fastapi-app aichatappcontainer.azurecr.io/fastapi-app:latest` - Tag the local Docker image for ACR
+    - `docker push aichatappcontainer.azurecr.io/fastapi-app:latest` - Push the image to ACR
