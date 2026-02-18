@@ -79,3 +79,31 @@ Simple AI Chat App RAG Backend written using Python and used Ollama for the LLM
     - `az acr login --name aichatappcontainer` - Log into the Azure ACR
     - `docker tag fastapi-app aichatappcontainer.azurecr.io/fastapi-app:latest` - Tag the local Docker image for ACR
     - `docker push aichatappcontainer.azurecr.io/fastapi-app:latest` - Push the image to ACR
+
+# Steps to Deploy
+
+1. `docker build --no-cache -t fastapi-app .` - Builds the Docker image locally forcing it to rebuild cleanly
+1. `docker tag fastapi-app aichatappcontainer.azurecr.io/fastapi-app:latest` - Tag the local Docker image for ACR
+1. `az login` - Log into Azure CLI if not already logged in
+1. `az acr login --name aichatappcontainer` - Log into the Azure ACR
+1. `docker push aichatappcontainer.azurecr.io/fastapi-app:latest` - Push the image to ACR
+1. Create a revision of the `fastapi-app-container` (powershell)
+    ```powershell
+    az containerapp update `
+        --name fastapi-app-container `
+        --resource-group caseyemerydev-rg `
+        --image aichatappcontainer.azurecr.io/fastapi-app:latest
+    ```
+1. Verify new revision is created
+    - Go to portal.azure.com
+    - Container Apps > fastapi-app-container
+    - Application > Revisions and replicas
+    - Ensure
+        - The revision number has changed
+        - It is Active
+        - Running status: Running
+
+## Alternative Deploy (easiest)
+
+1. Update `deploy.ps1` script as necessary and save
+1. Run `.\deploy.ps1`

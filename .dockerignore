@@ -49,3 +49,6 @@ temp/
 *.pem
 *.key
 *.crt
+
+# Deployment scripts
+deploy.ps1
