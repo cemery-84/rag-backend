@@ -107,3 +107,9 @@ Simple AI Chat App RAG Backend written using Python and used Ollama for the LLM
 
 1. Update `deploy.ps1` script as necessary and save
 1. Run `.\deploy.ps1`
+
+# Kubernetes
+
+- `az aks get-credentials --resource-group caseyemerydev-rg --name ai-chat-app-aks-cluster` - Pull AKS Credentials into the local Kubeconfig
+- `kubectl get nodes` - Verify the connection
+- `kubectl cluster-info` - Check cluster info

@@ -1,20 +1,36 @@
-from .cosmos import messages_container
+from .firestore import db
 from uuid import uuid4
 from datetime import datetime, timezone
 
+# Messages are stored in Firestore under the path: users/{user_id}/conversations/{conversation_id}/messages/{message_id}
+
+# Create a new message in a conversation
 def create_message_db(conversation_id: str, user_id: str, role: str, content: str):
+    message_id = str(uuid4())
     message = {
-        "id": str(uuid4()),
-        "conversation_id": conversation_id,
-        "user_id": user_id,
         "role": role,
         "content": content,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
-    messages_container.create_item(message)
-    return message
+    
+    db.collection("users") \
+        .document(user_id) \
+        .collection("conversations") \
+        .document(conversation_id) \
+        .collection("messages") \
+        .document(message_id) \
+        .set(message)
+    
+    return {"id": message_id, **message}
 
-def list_messages_db(conversation_id: str):
-    query = "SELECT * FROM c WHERE c.conversation_id = @conversation_id ORDER BY c.created_at ASC"
-    parameters = [{"name": "@conversation_id", "value": conversation_id}]
-    return list(messages_container.query_items(query=query, parameters=parameters, enable_cross_partition_query=True))
+# List all messages in a conversation, ordered by created_at ascending
+def list_messages_db(conversation_id: str, user_id: str):
+    docs = db.collection("users") \
+            .document(user_id) \
+            .collection("conversations") \
+            .document(conversation_id) \
+            .collection("messages") \
+            .order_by("created_at") \
+            .stream()
+            
+    return [{"id": doc.id, **doc.to_dict()} for doc in docs]

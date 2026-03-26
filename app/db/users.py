@@ -1,22 +1,20 @@
-from .cosmos import users_container
+from .firestore import db
 from datetime import datetime, timezone
-from azure.cosmos.exceptions import CosmosResourceNotFoundError
 
-import logging
-logger = logging.getLogger(__name__)
+# Users are stored in Firestore under the collection: users/{user_id}
 
+# Ensure a user document exists for the given user_id. If it doesn't exist, create it with the provided email.
 def ensure_user_exists(user_id: str, email: str = None):
-    try:
-        # Try to read the user, if it doesn't exist an exception will be thrown
-        return users_container.read_item(item=user_id, partition_key=user_id)
-    except CosmosResourceNotFoundError:
-        logger.info(f"User {user_id} not found, creating new user.")
-        
-        # Create the user if it doesn't exist
-        user = {
-            "id": user_id,
-            "email": email,
-            "created_at": datetime.now(timezone.utc).isoformat()
-        }
-        users_container.create_item(user)
-        return user
+    ref = db.collection("users").document(user_id)
+    doc = ref.get()
+    
+    if doc.exists:
+        return {"id": doc.id, **doc.to_dict()}
+    
+    user_data = {
+        "email": email,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    ref.set(user_data)
+    return {"id": user_id, **user_data}

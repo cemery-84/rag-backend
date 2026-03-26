@@ -1,22 +1,40 @@
-from .cosmos import conversations_container, messages_container
+from .firestore import db
 from uuid import uuid4
 from datetime import datetime, timezone
 
+# Conversations are stored in Firestore under the path: users/{user_id}/conversations/{conversation_id}
+
+# Create a new conversation for a user
 def create_conversation_db(user_id: str, title: str | None = None):
+    conversation_id = str(uuid4())
     conversation = {
-        "id": str(uuid4()),
-        "user_id": user_id,
         "title": title or "New Conversation",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
-    conversations_container.create_item(conversation)
-    return conversation
+    
+    db.collection("users") \
+        .document(user_id) \
+        .collection("conversations") \
+        .document(conversation_id) \
+        .set(conversation)   
+    
+    return {"id": conversation_id, **conversation}
 
+# List all conversations for a user, ordered by updated_at descending
 def list_conversations_db(user_id: str):
-    query = "SELECT * FROM c WHERE c.user_id = @user_id ORDER BY c.updated_at DESC"
-    parameters = [{"name": "@user_id", "value": user_id}]
-    return list(conversations_container.query_items(query=query, parameters=parameters, enable_cross_partition_query=True))
+    docs = db.collection("users") \
+        .document(user_id) \
+        .collection("conversations") \
+        .order_by("updated_at", direction="DESCENDING") \
+        .stream()
+    
+    return [{"id": doc.id, **doc.to_dict()} for doc in docs]
 
+# Delete a conversation
 def delete_conversation_db(conversation_id: str, user_id: str):
-    conversations_container.delete_item(item=conversation_id, partition_key=user_id)
+    db.collection("users") \
+        .document(user_id) \
+        .collection("conversations") \
+        .document(conversation_id) \
+        .delete()

@@ -24,7 +24,7 @@ def delete_conversation_route(conversation_id: str, user: dict = Depends(get_cur
 
 @router.get("/{conversation_id}/messages")
 def get_conversation_messages_route(conversation_id: str, user: dict = Depends(get_current_user)):
-    return list_messages_db(conversation_id=conversation_id)
+    return list_messages_db(conversation_id=conversation_id, user_id=user["user_id"])
 
 @router.post("/{conversation_id}/messages")
 def create_conversation_message_route(conversation_id: str, body: MessageCreate, user: dict = Depends(get_current_user)):
